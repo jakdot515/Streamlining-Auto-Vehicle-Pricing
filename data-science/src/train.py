@@ -28,7 +28,7 @@ def parse_args():
                         help="Number of trees in the forest")
     parser.add_argument("--max_depth", type=int, default=None,
                         help="Maximum depth of the trees")
-    parser.add_argument("--criterion", type=str, default="squared_error",
+    parser.add_argument("--criterion", type=str, default="mse",
                         help="Function to measure split quality (squared_error, absolute_error)")
 
     args = parser.parse_args()
