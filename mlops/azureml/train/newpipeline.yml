@@ -60,7 +60,7 @@ jobs:
         values: [3, 5, 7, 10]
       criterion:
         type: choice
-        values: [mse, mae]
+        values: ["mse", "mae"]
     objective:
       goal: minimize
       primary_metric: MSE
