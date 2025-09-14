@@ -43,8 +43,8 @@ def main(args):
 
     # Map user-friendly criterion to sklearn supported
     criterion_map = {
-        "mse": "squared_error",
-        "mae": "absolute_error"
+        "mse": "mse",
+        "mae": "mae"
     }
     criterion = criterion_map.get(args.criterion, args.criterion)
 

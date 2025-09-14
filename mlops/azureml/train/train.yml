@@ -14,8 +14,8 @@ inputs:
     type: integer  # Specify the type for max_depth
     default: 5  # Provide the default value for max_depth
   criterion:
-    type: string
-    default: mse
+    type: choice
+    values: [mse, mae]
 
 outputs:
   model_output:
