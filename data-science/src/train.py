@@ -11,7 +11,6 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 import mlflow
 import mlflow.sklearn
-from matplotlib import pyplot as plt
 
 def parse_args():
     '''Parse input arguments'''
@@ -24,17 +23,20 @@ def parse_args():
     parser.add_argument("--train_data", type=str, help="Path to train dataset")
     parser.add_argument("--test_data", type=str, help="Path to test dataset")
     parser.add_argument("--model_output", type=str, help="Path of output model")
-    parser.add_argument('--criterion', type=str, default='gini',
-                        help='The function to measure the quality of a split')
-    parser.add_argument('--max_depth', type=int, default=None,
-                        help='The maximum depth of the tree. If None, then nodes are expanded until all the leaves contain less than min_samples_split samples.')
+    # RandomForest hyperparameters
+    parser.add_argument("--n_estimators", type=int, default=100,
+                        help="Number of trees in the forest")
+    parser.add_argument("--max_depth", type=int, default=None,
+                        help="Maximum depth of the trees")
+    parser.add_argument("--criterion", type=str, default="squared_error",
+                        help="Function to measure split quality (squared_error, absolute_error)")
 
     args = parser.parse_args()
 
     return args
 
 def main(args):
-    '''Read train and test datasets, train model, evaluate model, save trained model'''
+    '''Read train and test datasets, train model, evaluate model, save trained model RandomForestRegressor'''
 
     # -------- WRITE YOUR CODE HERE --------
 
@@ -49,7 +51,12 @@ def main(args):
     X_test = test_df.drop(columns=['Failure'])
 
     # Step 4: Initialize the RandomForest Regressor with specified hyperparameters, and train the model using the training data.
-    model = DecisionTreeClassifier(criterion=args.criterion, max_depth=args.max_depth)
+    model = RandomForestRegressor(
+        n_estimators=args.n_estimators,
+        max_depth=args.max_depth,
+        criterion=args.criterion,
+        random_state=42
+    )
     model.fit(X_train, y_train)
     
     # Step 5: Log model hyperparameters like 'n_estimators' and 'max_depth' for tracking purposes in MLflow.
@@ -59,10 +66,14 @@ def main(args):
     
     # Step 6: Predict target values on the test dataset using the trained model, and calculate the mean squared error.
     yhat_test = model.predict(X_test)
-    accuracy = accuracy_score(y_test, yhat_test)
-    print(f'Accuracy of Decision Tree classifier on test set: {accuracy:.2f}')
+    mse = mean_squared_error(y_test, yhat_test)
+    print("RandomForestRegressor Test MSE: {mse:.4f}")
     # Step 7: Log the MSE metric in MLflow for model evaluation, and save the trained model to the specified output path.
-    mlflow.log_metric("Accuracy", float(accuracy))
+    mlflow.log_param("model", "RandomForestRegressor")
+    mlflow.log_param("n_estimators", args.n_estimators)
+    mlflow.log_param("max_depth", args.max_depth)
+    mlflow.log_param("criterion", args.criterion)
+    mlflow.log_metric("MSE", float(mse))
     mlflow.sklearn.save_model(sk_model=model, path=args.model_output)
 
 if __name__ == "__main__":
@@ -77,7 +88,8 @@ if __name__ == "__main__":
         f"Test dataset input path: {args.test_data}",
         f"Model output path: {args.model_output}",
         f"Number of Estimators: {args.n_estimators}",
-        f"Max Depth: {args.max_depth}"
+        f"Max Depth: {args.max_depth}",
+        f"criterion: {args.criterion}"
     ]
 
     for line in lines:
