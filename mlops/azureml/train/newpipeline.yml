@@ -57,7 +57,10 @@ jobs:
         values: [10, 20, 30, 50]
       max_depth:
         type: choice
-        values: [3, 5, 7, 10]   # <-- fixed
+        values: [3, 5, 7, 10]
+      criterion:
+        type: choice
+        values: [mse, mae]
     objective:
       goal: minimize
       primary_metric: MSE
