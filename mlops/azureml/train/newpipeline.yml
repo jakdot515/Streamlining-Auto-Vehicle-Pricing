@@ -1,8 +1,8 @@
 $schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
 type: pipeline
-display_name: Streamlining_Auto_Vehicle_Pricing  # Provide the display name for the pipeline
-experiment_name: streamlining-Auto-Vehicle-Pricing  # Provide the experiment name
-description:  to implement a unified system that ensures seamless integration of data-driven pricing decisions, adaptability to changing market conditions, and operational efficiency  # Provide the description for the pipeline
+display_name: Streamlining_Auto_Vehicle_Pricing
+experiment_name: streamlining-Auto-Vehicle-Pricing
+description: Unified system for data-driven pricing decisions and adaptability.
 
 inputs:
   raw_data:
@@ -11,11 +11,11 @@ inputs:
 
 outputs:
   train_data:
-    type: uri_file  # Specify the type for train_data output
+    type: uri_folder
   test_data:
-    type: uri_file  # Specify the type for test_data output
+    type: uri_folder
   model_info_output_path:
-    type: uri_file  # Specify the type for model_info_output_path output
+    type: uri_folder
 
 settings:
   default_datastore: azureml:workspaceblobstore
@@ -24,14 +24,14 @@ settings:
 
 jobs:
   prep_data:
-    name: prep_data  # Provide the job name
-    display_name: prep-data  # Provide the display name for the job
+    name: prep_data
+    display_name: prep-data
     code: ../../../data-science/src
     command: >-
-      python prep.py  
-      --raw_data ${{inputs.raw_data}} 
+      python prep.py
+      --raw_data ${{inputs.raw_data}}
       --train_data ${{outputs.train_data}}
-      --test_data ${{outputs.test_data}} 
+      --test_data ${{outputs.test_data}}
     environment: azureml:used-cars-train-env@latest
     inputs:
       raw_data: ${{parent.inputs.raw_data}}
@@ -40,8 +40,8 @@ jobs:
       test_data: ${{parent.outputs.test_data}}
 
   sweep_step:
-    name: sweep-_job
-    display_name: sweep-job  # Hint: Provide the display name for the job
+    name: sweep_job
+    display_name: sweep-job
     type: sweep
     inputs:
       train_data: ${{parent.jobs.prep_data.outputs.train_data}}
@@ -49,15 +49,15 @@ jobs:
     outputs:
       model_output:
         type: mlflow_model
-    sampling_algorithm: random  # Specify the sampling algorithm
-    trial: ./train.yml  # Refers to a separate command component
+    sampling_algorithm: random
+    trial: ./train.yml
     search_space:
       n_estimators:
         type: choice
         values: [10, 20, 30, 50]
       max_depth:
-        type: choice  # Specify the type for max_depth
-        values: ["gini", "entropy"]  # Provide the values for max_depth
+        type: choice
+        values: [3, 5, 7, 10]   # <-- fixed
     objective:
       goal: minimize
       primary_metric: MSE
@@ -66,15 +66,14 @@ jobs:
       max_concurrent_trials: 10
       timeout: 7200
 
-
   register_model:
-    name: register_model  # Provide the job name
-    display_name: register-model  # Provide the display name for the job
+    name: register_model
+    display_name: register-model
     code: ../../../data-science/src
     command: >-
-      python register.py 
-      --model_name ${{inputs.model_name}} 
-      --model_path ${{inputs.model_path}} 
+      python register.py
+      --model_name ${{inputs.model_name}}
+      --model_path ${{inputs.model_path}}
       --model_info_output_path ${{outputs.model_info_output_path}}
     environment: azureml:used-cars-train-env@latest
     inputs:
@@ -82,4 +81,3 @@ jobs:
       model_path: ${{parent.jobs.sweep_step.outputs.model_output}}
     outputs:
       model_info_output_path: ${{parent.outputs.model_info_output_path}}
-

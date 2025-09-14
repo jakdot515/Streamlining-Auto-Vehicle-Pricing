@@ -50,18 +50,15 @@ def main(args):
     print(f"Split data → Train: {train_df.shape}, Test: {test_df.shape}")
 
     # Step 3: Ensure output directories exist
-    os.makedirs(args.train_data, exist_ok=True)
-    os.makedirs(args.test_data, exist_ok=True)
+    #os.makedirs(args.train_data, exist_ok=True)
+    #os.makedirs(args.test_data, exist_ok=True)
 
     # Step 4: Save train/test sets
-    train_out = os.path.join(args.train_data, "train.csv")
-    test_out = os.path.join(args.test_data, "test.csv")
+    train_output_path = os.path.join(args.train_data, "train.csv")
+    test_output_path = os.path.join(args.test_data, "test.csv")
 
-    train_df.to_csv(train_out, index=False)
-    test_df.to_csv(test_out, index=False)
-
-    print(f"✅ Saved train data to {train_out}")
-    print(f"✅ Saved test data to {test_out}")
+    train_df.to_csv(train_output_path, index=False)
+    test_df.to_csv(test_output_path, index=False)
 
     # Step 5: Log metrics
     mlflow.log_metric("train_size", train_df.shape[0])
